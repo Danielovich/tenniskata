@@ -28,7 +28,7 @@ namespace FactoryDojo
             var game = new Tennis( playerLists );
 
             Assert.True( game.Players.Count == 2 );
-            Assert.True( game.Players.Select( x => x.GamePoints.PointValue == 0 ).Count() > 0 );
+            Assert.True( game.Players.Select( x => x.GamePoints == GamePointEnum.ZERO ).Count() > 0 );
         }
 
         [Fact]
@@ -58,8 +58,8 @@ namespace FactoryDojo
 
             var winner = game.Players.Where( p => p.WonGame == true ).FirstOrDefault();
 
-            _outputHelper.WriteLine( winner.GamePoints.PointValue.ToString() );
-            Assert.True( winner.GamePoints.PointValue > 0 );
+            _outputHelper.WriteLine( winner.GamePoints.ToString() );
+            Assert.True( winner.GamePoints != GamePointEnum.ZERO );
         }
 
         [Fact]
@@ -77,7 +77,7 @@ namespace FactoryDojo
             game.Play();
 
             foreach (var player in game.Players) {
-                _outputHelper.WriteLine( player.GamePoints.PointValue.ToString() );
+                _outputHelper.WriteLine( player.GamePoints.ToString() );
             }
 
             Assert.True( game.PointHistoryList.Count == 5 );
@@ -86,15 +86,15 @@ namespace FactoryDojo
 
 
         [Fact]
-        public void If_One_Player_Has_40_Points_And_The_Other_10_Set_A_SetPoint() {
+        public void If_One_Player_Has_40_Points_And_The_Other_15_Set_A_SetPoint() {
             var playerLists = new List<TennisPlayer>();
             playerLists.Add( new TennisPlayer() );
             playerLists.Add( new TennisPlayer() );
 
             var game = new Tennis( playerLists );
 
-            game.Players[0].GamePoints.PointValue = 40;
-            game.Players[1].GamePoints.PointValue = 10;
+            game.Players[0].GamePoints = GamePointEnum.FORTY;
+            game.Players[1].GamePoints = GamePointEnum.FIFTEEN;
 
             game.Players[0].WonGame = true;
             game.Players[1].WonGame = false;
@@ -102,7 +102,7 @@ namespace FactoryDojo
             game.SetGamePointForGameWinner();
             
             foreach (var player in game.Players) {
-                _outputHelper.WriteLine( player.GamePoints.PointValue.ToString() );
+                _outputHelper.WriteLine( player.GamePoints.ToString() );
                 _outputHelper.WriteLine( player.SetPoints.ToString() );
             }
 
@@ -117,8 +117,8 @@ namespace FactoryDojo
 
             var game = new Tennis( playerLists );
 
-            game.Players[0].GamePoints.PointValue = 40;
-            game.Players[1].GamePoints.PointValue = 40;
+            game.Players[0].GamePoints = GamePointEnum.FORTY;
+            game.Players[1].GamePoints = GamePointEnum.FORTY;
 
             game.Players[0].WonGame = true;
             game.Players[1].WonGame = false;
@@ -126,7 +126,7 @@ namespace FactoryDojo
             game.SetGamePointForGameWinner();
 
             foreach (var player in game.Players) {
-                _outputHelper.WriteLine( player.GamePoints.PointValue.ToString() );
+                _outputHelper.WriteLine( player.GamePoints.ToString() );
                 _outputHelper.WriteLine( player.SetPoints.ToString() );
             }
 
@@ -142,8 +142,8 @@ namespace FactoryDojo
 
             var game = new Tennis( playerLists );
 
-            game.Players[0].GamePoints.PointValue = 40;
-            game.Players[1].GamePoints.PointValue = 40;
+            game.Players[0].GamePoints = GamePointEnum.FORTY;
+            game.Players[1].GamePoints = GamePointEnum.FORTY;
 
             game.Players[0].WonGame = true;
             game.Players[1].WonGame = false;
@@ -163,8 +163,8 @@ namespace FactoryDojo
 
             var game = new Tennis( playerLists );
 
-            game.Players[0].GamePoints.PointValue = 40;
-            game.Players[1].GamePoints.PointValue = 40;
+            game.Players[0].GamePoints = GamePointEnum.FORTY;
+            game.Players[1].GamePoints = GamePointEnum.FORTY;
 
             game.Players[0].WonGame = true;
             game.Players[1].WonGame = false;
@@ -190,12 +190,13 @@ namespace FactoryDojo
             game.Players[0].SetPoints = 5;
             game.Players[1].SetPoints = 4;
 
-            game.Players[0].GamePoints.PointValue = 40;
-            game.Players[1].GamePoints.PointValue = 15;
+            game.Players[0].GamePoints = GamePointEnum.FORTY;
+            game.Players[1].GamePoints = GamePointEnum.FORTY;
 
             game.Players[0].WonGame = true;
             game.Players[1].WonGame = false;
 
+            game.SetGamePointForGameWinner();
             game.SetGamePointForGameWinner();
 
             Assert.True( game.Players[0].SetPoints == 0 );
@@ -211,14 +212,18 @@ namespace FactoryDojo
 
             var game = new Tennis( playerLists );
 
-            game.Players[0].SetPoints = 6;
+            
+            game.Players[1].GamePoints = GamePointEnum.FORTY;
             game.Players[1].SetPoints = 5;
-
-            game.Players[0].GamePoints.PointValue = 40;
-            game.Players[1].GamePoints.PointValue = 15;
-
-            game.Players[0].WonGame = true;
             game.Players[1].WonGame = false;
+
+            game.Players[0].GamePoints = GamePointEnum.FORTY;
+            game.Players[0].SetPoints = 6;
+            game.Players[0].Advantage = true;
+            game.Players[0].WonGame = true;
+            
+            game.PlayerInAdvantage = game.Players[0].Identifier;
+            game.IsInAdvantage = true;
 
             game.SetGamePointForGameWinner();
 
@@ -235,13 +240,16 @@ namespace FactoryDojo
             var game = new Tennis( playerLists );
 
             game.Players[0].SetPoints = 4;
-            game.Players[1].SetPoints = 3;
-
-            game.Players[0].GamePoints.PointValue = 40;
-            game.Players[1].GamePoints.PointValue = 15;
-
+            game.Players[0].GamePoints = GamePointEnum.FORTY;
+            game.Players[0].Advantage = true;
             game.Players[0].WonGame = true;
+
+            game.Players[1].GamePoints = GamePointEnum.FORTY;
+            game.Players[1].SetPoints = 3;
             game.Players[1].WonGame = false;
+
+            game.IsInAdvantage = true;
+            game.PlayerInAdvantage = game.Players[0].Identifier;
 
             game.SetGamePointForGameWinner();
 
@@ -263,8 +271,8 @@ namespace FactoryDojo
             game.Players[0].SetsWon = 2;
             game.Players[1].SetsWon = 1;
 
-            game.Players[0].GamePoints.PointValue = 40;
-            game.Players[1].GamePoints.PointValue = 15;
+            game.Players[0].GamePoints = GamePointEnum.FORTY;
+            game.Players[1].GamePoints = GamePointEnum.FIFTEEN;
 
             game.Players[0].WonGame = true;
             game.Players[1].WonGame = false;
@@ -275,6 +283,10 @@ namespace FactoryDojo
             Assert.True( game.MatchOver );
         }
 
+
+        /// <summary>
+        /// A game simulation. No assertions.
+        /// </summary>
         [Fact]
         public void Play_Until_A_Player_Wins_Match() {
             var playerLists = new List<TennisPlayer>();
@@ -284,11 +296,8 @@ namespace FactoryDojo
             var game = new Tennis( playerLists );
 
             while (!game.MatchOver) {
+                _outputHelper.WriteLine( game.Players[0].GamePoints.ToString() + " - " + game.Players[1].GamePoints.ToString() + " ("+ game.PlayerInAdvantage  +")");
                 game.Play();
-            }
-
-            foreach (var item in game.PointHistoryList) {
-                _outputHelper.WriteLine(item.WinnerPoint + " - " + item.LoserPoint );
             }
         }
     }

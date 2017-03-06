@@ -18,3 +18,17 @@ C:\Users\drexdafr\documents\visual studio 2015\Projects\FactoryDojo\FactoryDojo\
 C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\TennisGame.exe.config
 C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\obj\Debug\TennisGame.exe
 C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\obj\Debug\TennisGame.pdb
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\obj\Debug\TennisGame.csprojResolveAssemblyReference.cache
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\TennisGame.exe
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\TennisGame.pdb
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\xunit.abstractions.dll
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\xunit.assert.dll
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\xunit.core.dll
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\xunit.execution.desktop.dll
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\xunit.abstractions.xml
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\xunit.assert.pdb
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\xunit.assert.xml
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\xunit.core.pdb
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\xunit.core.xml
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\xunit.execution.desktop.pdb
+C:\Users\drexdafr\Documents\visual studio 2015\Projects\FactoryDojo\TennisGame\bin\Debug\xunit.execution.desktop.xml

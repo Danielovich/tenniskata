@@ -14,11 +14,17 @@ namespace TennisGameDojo
 
     public class Tennis
     {
+        private const int MAX_SET_POINT_MARGIN = 2;
+        private const int MAX_SET_WON_MARGIN = 2;
+        private const int MAX_PLAYERS = 2;
+        private const int MAX_SET_POINTS = 6;
+
+
         public List<TennisPlayer> Players { get; internal set; }
         public List<PointHistory> PointHistoryList { get; set; }
         public bool Deuce { get; private set; }
         public int GameDelay { get; set; }
-        public bool IsInAdvantage { get; private set; }
+        public bool IsInAdvantage { get; set; }
         public Guid PlayerInAdvantage { get; set; }
         public bool MatchOver { get; set; }
 
@@ -26,12 +32,12 @@ namespace TennisGameDojo
             if (playerLists == null)
                 throw new ArgumentNullException();
 
-            if (playerLists.Count != 2) {
+            if (playerLists.Count != MAX_PLAYERS) {
                 throw new ArgumentException( "must be played by two players" );
             }
 
             foreach (var player in playerLists) {
-                player.GamePoints = new Point();
+                player.GamePoints = GamePointEnum.ZERO;
                 player.Identifier = Guid.NewGuid();
             }
 
@@ -54,29 +60,28 @@ namespace TennisGameDojo
             SetGamePointForGameWinner();
         }
 
-        public enum GamePointEnum { ZERO = 0, FIFTEEN = 15, THIRTY = 30, FORTY = 40 };
 
         public void SetGamePointForGameWinner() {
             var gameWinner = GetGameWinner();
             var gameLoser = GetGameLoser();
 
-            switch (gameWinner.GamePoints.PointValue) {
-                case 0: {
-                    gameWinner.GamePoints.PointValue = (int)GamePointEnum.FIFTEEN;
+            switch (gameWinner.GamePoints) {
+                case GamePointEnum.ZERO: {
+                    gameWinner.GamePoints = GamePointEnum.FIFTEEN;
                     SetGamePointHistory( gameWinner, gameLoser, GamePointEnum.FIFTEEN );
                     break;
                 }
-                case 15: {
-                    gameWinner.GamePoints.PointValue = (int)GamePointEnum.THIRTY;
+                case GamePointEnum.FIFTEEN: {
+                    gameWinner.GamePoints = GamePointEnum.THIRTY;
                     SetGamePointHistory( gameWinner, gameLoser, GamePointEnum.THIRTY );
                     break;
                 }
-                case 30: {
-                    gameWinner.GamePoints.PointValue = (int)GamePointEnum.FORTY;
+                case GamePointEnum.THIRTY: {
+                    gameWinner.GamePoints = GamePointEnum.FORTY;
                     SetGamePointHistory( gameWinner, gameLoser, GamePointEnum.FORTY );
                     break;
                 }
-                case 40: {
+                case GamePointEnum.FORTY: {
                     SetGamePointHistory( gameWinner, gameLoser, GamePointEnum.FORTY );
                     UpdateScore();
                     break;
@@ -84,20 +89,25 @@ namespace TennisGameDojo
             }
         }
 
-        public void ResetMatch() {
-            MatchOver = false;
-            PointHistoryList = new List<PointHistory>();
-        }
 
 
         private void SetGamePointHistory( TennisPlayer winner, TennisPlayer loser, GamePointEnum point ) {
-            this.PointHistoryList.Add( new PointHistory { WinnerPoint = (int)point, LoserPoint = loser.GamePoints.PointValue } );
+            this.PointHistoryList.Add( new PointHistory { WinnerPoint = point, LoserPoint = loser.GamePoints, WinnerSetPoint = winner.SetPoints, LoserSetPoint = loser.SetPoints } );
+        }
+
+        private void SetGameSetHistory( TennisPlayer winner, TennisPlayer loser ) {
+            this.PointHistoryList.Add( new PointHistory { WinnerPoint = winner.GamePoints, LoserPoint = loser.GamePoints, WinnerSetPoint = winner.SetPoints + 1, LoserSetPoint = loser.SetPoints } );
+        }
+
+        private void ResetMatch() {
+            MatchOver = false;
+            PointHistoryList = new List<PointHistory>();
         }
 
         private void ResetGamePlayers() {
             foreach (var player in Players) {
                 player.WonGame = false;
-                player.GamePoints.PointValue = 0;
+                player.GamePoints = GamePointEnum.ZERO;
                 player.Advantage = false;
             }
         }
@@ -114,14 +124,14 @@ namespace TennisGameDojo
             var player1 = Players[0];
             var player2 = Players[1];
 
-            if (player1.GamePoints.PointValue == 40) {
-                if (player2.GamePoints.PointValue == 40) {
+            if (player1.GamePoints == GamePointEnum.FORTY) {
+                if (player2.GamePoints == GamePointEnum.FORTY) {
                     this.Deuce = true;
                 }
             }
 
-            if (player2.GamePoints.PointValue == 40) {
-                if (player1.GamePoints.PointValue == 40) {
+            if (player2.GamePoints == GamePointEnum.FORTY) {
+                if (player1.GamePoints == GamePointEnum.FORTY) {
                     this.Deuce = true;
                 }
             }
@@ -154,10 +164,12 @@ namespace TennisGameDojo
             ResetGame();
         }
 
-        public void SetPointsForWinner() {
+        private void SetPointsForWinner() {
             var winningPlayer = GetGameWinner();
+            var losingPlayer = GetGameLoser();
 
             winningPlayer.SetPoints++;
+            SetGameSetHistory( winningPlayer, losingPlayer );
         }
 
         private void SetSetsWonForWinner() {
@@ -166,8 +178,8 @@ namespace TennisGameDojo
 
             var setPointMargin = ( winningPlayer.SetPoints - losingPlayer.SetPoints );
 
-            if (setPointMargin >= 2) {
-                if (winningPlayer.SetPoints >= 6) {
+            if (setPointMargin >= MAX_SET_POINT_MARGIN) {
+                if (winningPlayer.SetPoints >= MAX_SET_POINTS) {
                     winningPlayer.SetsWon++;
 
                     //reset setpoints
@@ -183,7 +195,7 @@ namespace TennisGameDojo
 
             var setsWonMargin = ( winningPlayer.SetsWon - losingPlayer.SetsWon );
 
-            if (setsWonMargin >= 2) {
+            if (setsWonMargin >= MAX_SET_WON_MARGIN) {
                 MatchOver = true;
             } else {
                 MatchOver = false;
@@ -217,7 +229,7 @@ namespace TennisGameDojo
                 player.WonGame = false;
             }
 
-            var gamerWinnerIndex = Tennis.RandomNumber( 0, 2 );
+            var gamerWinnerIndex = Tennis.RandomNumber( 0, MAX_PLAYERS );
 
             Players[gamerWinnerIndex].WonGame = true;
         }
@@ -255,11 +267,14 @@ namespace TennisGameDojo
         }
     }
 
+    public enum GamePointEnum { ZERO = 0, FIFTEEN = 15, THIRTY = 30, FORTY = 40 };
+
+
     public class TennisPlayer
     {
         public Guid Identifier { get; set; }
         public string Name { get; set; }
-        public Point GamePoints { get; set; }
+        public GamePointEnum GamePoints { get; set; }
         public int SetPoints { get; set; }
         public bool WonGame { get; internal set; }
         public bool Advantage { get; internal set; }
@@ -268,13 +283,10 @@ namespace TennisGameDojo
 
     public class PointHistory
     {
-        public int WinnerPoint { get; set; }
-        public int LoserPoint { get; set; }
+        public GamePointEnum WinnerPoint { get; set; }
+        public GamePointEnum LoserPoint { get; set; }
+        public int WinnerSetPoint { get; set; }
+        public int LoserSetPoint { get; set; }
     }
 
-
-    public class Point
-    {
-        public int PointValue { get; set; }
-    }
 }
