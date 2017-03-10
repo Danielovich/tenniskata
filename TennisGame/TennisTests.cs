@@ -280,7 +280,7 @@ namespace FactoryDojo
             game.SetGamePointForGameWinner();
 
             Assert.True( game.Players[0].SetsWon == 3 );
-            Assert.True( game.MatchOver );
+            Assert.True( game.IsMatchOver );
         }
 
 
@@ -295,7 +295,7 @@ namespace FactoryDojo
 
             var game = new Tennis( playerLists );
 
-            while (!game.MatchOver) {
+            while (!game.IsMatchOver) {
                 _outputHelper.WriteLine( game.Players[0].GamePoints.ToString() + " - " + game.Players[1].GamePoints.ToString() + " ("+ game.PlayerInAdvantage  +")");
                 game.Play();
             }

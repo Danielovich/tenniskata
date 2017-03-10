@@ -26,8 +26,13 @@ namespace TennisGameDojo
         public int GameDelay { get; set; }
         public bool IsInAdvantage { get; set; }
         public Guid PlayerInAdvantage { get; set; }
-        public bool MatchOver { get; set; }
+        public bool IsMatchOver { get; set; }
 
+
+        /// <summary>
+        /// initialize a new game in the construtor
+        /// </summary>
+        /// <param name="playerLists"></param>
         public Tennis( List<TennisPlayer> playerLists ) {
             if (playerLists == null)
                 throw new ArgumentNullException();
@@ -50,57 +55,61 @@ namespace TennisGameDojo
         /// This is where the actual game is going on.
         /// </summary>
         public void Play() {
-            //a game could take some time to find a point
+            //a game could, if you wanted, take some time to find a point
             SetDelay();
 
             //find a winner amongst the players
             PickGameWinner();
 
-            //we must update the winner points
+            //we must update the (game/set/match) winner points
             SetGamePointForGameWinner();
         }
 
 
         public void SetGamePointForGameWinner() {
             var gameWinner = GetGameWinner();
-            var gameLoser = GetGameLoser();
 
             switch (gameWinner.GamePoints) {
                 case GamePointEnum.ZERO: {
-                    gameWinner.GamePoints = GamePointEnum.FIFTEEN;
-                    SetGamePointHistory( gameWinner, gameLoser, GamePointEnum.FIFTEEN );
+                    SetGamePoint( GamePointEnum.FIFTEEN );
                     break;
                 }
                 case GamePointEnum.FIFTEEN: {
-                    gameWinner.GamePoints = GamePointEnum.THIRTY;
-                    SetGamePointHistory( gameWinner, gameLoser, GamePointEnum.THIRTY );
+                    SetGamePoint( GamePointEnum.THIRTY );
                     break;
                 }
                 case GamePointEnum.THIRTY: {
-                    gameWinner.GamePoints = GamePointEnum.FORTY;
-                    SetGamePointHistory( gameWinner, gameLoser, GamePointEnum.FORTY );
+                    SetGamePoint( GamePointEnum.FORTY );
                     break;
                 }
                 case GamePointEnum.FORTY: {
-                    SetGamePointHistory( gameWinner, gameLoser, GamePointEnum.FORTY );
+                    SetGamePoint( GamePointEnum.FORTY );
                     UpdateScore();
                     break;
                 }
             }
         }
 
+        private void SetGamePoint(GamePointEnum points) {
+            var gameWinner = GetGameWinner();
 
+            SetGamePointHistory();
+            gameWinner.GamePoints = points;
+        }
 
-        private void SetGamePointHistory( TennisPlayer winner, TennisPlayer loser, GamePointEnum point ) {
-            this.PointHistoryList.Add( new PointHistory { WinnerPoint = point, LoserPoint = loser.GamePoints, WinnerSetPoint = winner.SetPoints, LoserSetPoint = loser.SetPoints } );
+        private void SetGamePointHistory() {
+            var gameWinner = GetGameWinner();
+            var gameLoser = GetGameLoser();
+
+            PointHistoryList.Add( new PointHistory { WinnerPoint = gameWinner.GamePoints, LoserPoint = gameLoser.GamePoints, WinnerSetPoint = gameWinner.SetPoints, LoserSetPoint = gameLoser.SetPoints } );
         }
 
         private void SetGameSetHistory( TennisPlayer winner, TennisPlayer loser ) {
-            this.PointHistoryList.Add( new PointHistory { WinnerPoint = winner.GamePoints, LoserPoint = loser.GamePoints, WinnerSetPoint = winner.SetPoints + 1, LoserSetPoint = loser.SetPoints } );
+            PointHistoryList.Add( new PointHistory { WinnerPoint = winner.GamePoints, LoserPoint = loser.GamePoints, WinnerSetPoint = winner.SetPoints + 1, LoserSetPoint = loser.SetPoints } );
         }
 
         private void ResetMatch() {
-            MatchOver = false;
+            IsMatchOver = false;
             PointHistoryList = new List<PointHistory>();
         }
 
@@ -126,17 +135,17 @@ namespace TennisGameDojo
 
             if (player1.GamePoints == GamePointEnum.FORTY) {
                 if (player2.GamePoints == GamePointEnum.FORTY) {
-                    this.Deuce = true;
+                    Deuce = true;
                 }
             }
 
             if (player2.GamePoints == GamePointEnum.FORTY) {
                 if (player1.GamePoints == GamePointEnum.FORTY) {
-                    this.Deuce = true;
+                    Deuce = true;
                 }
             }
 
-            if (this.Deuce) {
+            if (Deuce) {
                 return true;
             }
 
@@ -144,6 +153,8 @@ namespace TennisGameDojo
         }
 
         private void UpdateScore() {
+            var winningPlayer = GetGameWinner();
+
             if (IsDeuce() && IsInAdvantage == false) {
                 SetAdvantage();
                 return;
@@ -158,7 +169,7 @@ namespace TennisGameDojo
 
             SetPointsForWinner();
             SetSetsWonForWinner();
-            IsMatchOver();
+            MatchOver();
 
             ResetGamePlayers();
             ResetGame();
@@ -189,26 +200,28 @@ namespace TennisGameDojo
             }
         }
 
-        private void IsMatchOver() {
+        private void MatchOver() {
             var winningPlayer = GetGameWinner();
             var losingPlayer = GetGameLoser();
 
             var setsWonMargin = ( winningPlayer.SetsWon - losingPlayer.SetsWon );
 
             if (setsWonMargin >= MAX_SET_WON_MARGIN) {
-                MatchOver = true;
+                IsMatchOver = true;
             } else {
-                MatchOver = false;
+                IsMatchOver = false;
             }
         }
 
         private bool IsAdvantagePlayerWinningGame() {
             var winningPlayer = GetGameWinner();
 
+            //player is in advantage and therefor wins game
             if (winningPlayer.Identifier == PlayerInAdvantage) {
                 return true;
             }
 
+            //reset advantage since winning player is not in advantage
             foreach (var player in Players) {
                 player.Advantage = false;
             }
@@ -216,21 +229,27 @@ namespace TennisGameDojo
             return false;
         }
 
+        /// <summary>
+        /// advantage can be given to a player if all players has 40 gamepoints
+        /// </summary>
         private void SetAdvantage() {
             var winningPlayer = GetGameWinner();
-
             winningPlayer.Advantage = true;
+
             IsInAdvantage = true;
             PlayerInAdvantage = winningPlayer.Identifier;
         }
 
         private void PickGameWinner() {
+            //reset all players WonGame prop' so we're certain we pick just one game winner
             foreach (var player in Players) {
                 player.WonGame = false;
             }
 
-            var gamerWinnerIndex = Tennis.RandomNumber( 0, MAX_PLAYERS );
+            //this is a computer game so we pick a random player 
+            var gamerWinnerIndex = RandomNumber( 0, MAX_PLAYERS );
 
+            //set the random player as game winner
             Players[gamerWinnerIndex].WonGame = true;
         }
 
@@ -255,7 +274,7 @@ namespace TennisGameDojo
         }
 
         private void SetDelay() {
-            System.Threading.Thread.Sleep( Tennis.RandomNumber( 0, GameDelay ) );
+            Thread.Sleep( RandomNumber( 0, GameDelay ) );
         }
 
         private static readonly Random random = new Random();
