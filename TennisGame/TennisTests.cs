@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TennisGameDojo;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace FactoryDojo
+namespace TennisGameDojo
 {
     public class TennisTests
     {
